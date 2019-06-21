@@ -18,7 +18,7 @@ class Agent:
     epsilon = MAX_EPSILON
 
     def __init__(self, num_actions, observation_space_shape, replace_target=10, *args, **kwargs):
-        self.evaluation_network = StackedFrameCNNPolicy(name='Evaluation Network', num_frames_to_stack=4, observation_space_shape=observation_space_shape, num_actions=num_actions)
+        self.evaluation_policy = StackedFrameCNNPolicy(name='Evaluation Network', num_frames_to_stack=4, observation_space_shape=observation_space_shape, num_actions=num_actions)
         #self.target_network = SimpleCNNPolicy(name='Target Network', observation_space_shape=observation_space_shape, num_actions=num_actions)
         self.num_actions = num_actions
         self.observation_space_shape = observation_space_shape
@@ -35,7 +35,7 @@ class Agent:
             return random.randint(0, self.num_actions-1)
 
         # Exploitation: Return index of action with highest Q value at current state, as determined by evaluation network
-        return np.argmax(self.evaluation_network.predict(current_state))
+        return np.argmax(self.evaluation_policy.predict(current_state))
 
     def observe(self, sample):
         self.steps += 1
@@ -49,8 +49,8 @@ class Agent:
         current_states = [ e[0] for e in batch ]
         next_states = [ e[3] for e in batch ]
         
-        predicted_q_values = self.evaluation_network.predict(current_states)
-        q_values_at_next_state = self.evaluation_network.predict(next_states)
+        predicted_q_values = self.evaluation_policy.predict(current_states)
+        q_values_at_next_state = self.evaluation_policy.predict(next_states)
 
         target_q_values = predicted_q_values
 
@@ -62,7 +62,7 @@ class Agent:
             else:
                 target_q_values[i][current_action] = reward  + DISCOUNT_FACTOR * np.max(q_values_at_next_state[i])
 
-        self.evaluation_network.optimise(current_states, target_q_values)
+        self.evaluation_policy.optimise(current_states, target_q_values)
 
         if self.steps % self.replace_target == 0:
             self.update_graph()
@@ -70,5 +70,5 @@ class Agent:
     def update_graph(self):
         pass
         #print("Updating...")
-        #self.target_network.q = self.evaluation_network.q.clone('clone')
+        #self.target_network.q = self.evaluation_policy.q.clone('clone')
         
