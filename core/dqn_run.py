@@ -61,12 +61,14 @@ def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
     current_state = env.reset()
     # 3 RGB channels are excess information. The environment has multicolor stuff in it, so to use just one channel,
-    # we just take the red channel. Remember that this does not work for all environments
+    # we could just take the red channel. Remember that this does not work for all environments
     # (for example, environment containing pure blue and green elements would be indistinguishable).
     # It is generally a good idea to convert to YCbCr and use luma component of the image as a single channel image
 
     # We also downscale image to 84x84 pixels. (Generally OK for most Atari games)
     # It is a good idea to visualise current_state after all the pre processing just to check if it makes sense
+    # Downscaled, luma channel image -
+    # https://github.com/codetendolkar/DeepRL_CNTK/blob/master/core/media/downscaled_image.PNG
     current_state = downscale(current_state)
 
     # IMPORTANT NOTE: A simgle image does not give enough information to the agent. For example, if the ball is in
