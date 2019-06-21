@@ -17,12 +17,12 @@ like CNNPolicy, StackedFrameCNN Policy etc inherit
 4. *Utilities* - pre-processing, memory replay buffers, frame stacking buffers etc go here
 
 Our objective is to create a library which lets users integrate any RL algorithm quickly with their own environment.
-A sample user code might look something like below. To achieve that requires consistent API amongst all environments
+A sample user code might look something like below (have a glance at the structure and come back).
+To achieve that requires consistent API amongst all environments
 and agents. We will first go over the API required of Environment, Agent and Policy classes
 
 Navigate to core/agents/base.py
 '''
-
 
 # import required modules
 import gym
@@ -57,7 +57,7 @@ agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84))
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
-def run():
+def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
     current_state = env.reset()
     # 3 RGB channels are excess information. The environment has multicolor stuff in it, so to use just one channel,
@@ -118,7 +118,8 @@ def run():
         cumulative_reward += reward
 
         # OPTIONAL (slows down training): render method displays the current state of the environment
-        env.render()
+        if render:
+            env.render()
 
         # Save policy after every episode and return cumulative earned reward.
         # Note that the saving part is the only CNTK specific code in this entire file
@@ -160,7 +161,10 @@ print("Training Starts..")
 # Training code
 ep = avg_reward = 0
 while ep < NUM_EPISODES:
-    episode_reward = run()
+    if ep < 5000:
+        episode_reward = run(render=False)
+    else:
+        episode_reward = run(render=True)
     print("Episode Terminated..")
     avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
     ep += 1
