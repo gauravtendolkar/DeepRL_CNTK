@@ -1,8 +1,7 @@
 import random
 import numpy as np
-from policy import SimpleCNNPolicy, StackedFrameCNNPolicy
-from replay_buffer import SimpleReplayBuffer
-import cntk as C
+from policies.cnn_policies import StackedFrameCNNPolicy
+from utils.buffers import SimpleReplayBuffer
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -12,6 +11,7 @@ STEPS_BEFORE_EPSILON_DECAY = 500000
 BATCH_SIZE = 32
 TERMINAL_STATE = None
 DISCOUNT_FACTOR = 0.99
+
 
 class Agent:
     steps = 0

@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 
+
 def downscale(observation0):
     im = Image.fromarray(observation0, mode='RGB')
     im = im.split()[0]

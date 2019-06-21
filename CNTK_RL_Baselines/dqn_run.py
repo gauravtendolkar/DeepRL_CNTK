@@ -1,6 +1,6 @@
 # Create environment
 import gym
-from preprocessing import downscale
+from utils.preprocessing import downscale
 import random
 env = gym.make('Pong-v0', frameskip=5)
 
@@ -11,7 +11,7 @@ NUM_ACTION_VALUES = env.action_space.n
 NUM_EPISODES = 10000
 
 # Create Agent
-from dqn_agent import Agent
+from agents.dqn import Agent
 agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84))
 
 

@@ -261,5 +261,6 @@ __pycache__/
 *.pyc
 
 CNTK_RL_Baselines.sln
+CNTK_RL_Baselines.pyproj
 .gitattributes
 .vs/

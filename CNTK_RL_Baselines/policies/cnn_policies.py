@@ -1,7 +1,7 @@
 import cntk as C
 from cntk.train.trainer import Trainer
-from cntk.learners import sgd, adam
-from replay_buffer import FrameStacker
+from cntk.learners import sgd
+from utils.buffers import FrameStacker
 
 
 class SimpleCNNPolicy:
