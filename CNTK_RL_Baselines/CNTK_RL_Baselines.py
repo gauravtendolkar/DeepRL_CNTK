@@ -3,7 +3,6 @@ import gym
 from preprocessing import downscale
 import random
 env = gym.make('Pong-v0', frameskip=5)
-env.reset()
 
 # State and Action spaces
 NUM_STATES = env.observation_space.shape
@@ -19,19 +18,22 @@ agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84))
 def run():
     current_state = env.reset()
     current_state = downscale(current_state)
+    stacked_current_state = agent.evaluation_network.frame_stacker.add_frame(current_state)
+
     cumulative_reward = 0
 
     while True:
-        current_action = agent.act(current_state)
+        current_action = agent.act(stacked_current_state)
 
         next_state, reward, is_done, info = env.step(current_action)
         next_state = downscale(next_state)
+        stacked_next_state = agent.evaluation_network.frame_stacker.add_frame(next_state)
 
         if is_done:
             print("Episode Terminated...")
-            next_state = None
+            agent.evaluation_network.frame_stacker.reset()
 
-        agent.observe((current_state, current_action, reward, next_state))
+        agent.observe((stacked_current_state, current_action, reward, stacked_next_state, is_done))
         agent.learn()
 
         current_state = next_state
@@ -45,6 +47,7 @@ def run():
 
 current_state = env.reset()
 current_state = downscale(current_state)
+stacked_current_state = agent.evaluation_network.frame_stacker.add_frame(current_state)
 
 print("Filling memory...")
 
@@ -52,10 +55,15 @@ while not agent.memory.is_full():
     current_action = random.randint(0, agent.num_actions-1)
     next_state, reward, is_done, info = env.step(current_action)
     next_state = downscale(next_state)
+    stacked_next_state = agent.evaluation_network.frame_stacker.add_frame(next_state)
+
     if is_done:
+        agent.evaluation_network.frame_stacker.reset()
         next_state = env.reset()
         next_state = downscale(next_state)
-    agent.observe((current_state, current_action, reward, next_state))
+        stacked_next_state = agent.evaluation_network.frame_stacker.add_frame(next_state)
+
+    agent.observe((stacked_current_state, current_action, reward, stacked_next_state, is_done))
     current_state = next_state
 
 print("Done..")

@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from policy import SimpleCNNPolicy
+from policy import SimpleCNNPolicy, StackedFrameCNNPolicy
 from replay_buffer import SimpleReplayBuffer
 import cntk as C
 import warnings
@@ -18,7 +18,7 @@ class Agent:
     epsilon = MAX_EPSILON
 
     def __init__(self, num_actions, observation_space_shape, replace_target=10, *args, **kwargs):
-        self.evaluation_network = SimpleCNNPolicy(name='Evaluation Network', observation_space_shape=observation_space_shape, num_actions=num_actions)
+        self.evaluation_network = StackedFrameCNNPolicy(name='Evaluation Network', num_frames_to_stack=4, observation_space_shape=observation_space_shape, num_actions=num_actions)
         #self.target_network = SimpleCNNPolicy(name='Target Network', observation_space_shape=observation_space_shape, num_actions=num_actions)
         self.num_actions = num_actions
         self.observation_space_shape = observation_space_shape
@@ -41,13 +41,13 @@ class Agent:
         self.steps += 1
         self.memory.add(sample)
         if self.steps >= STEPS_BEFORE_EPSILON_DECAY:
-            self.epsilon *= 0.999999999
+            self.epsilon *= 0.99999
 
     def learn(self):
         batch = self.memory.sample(BATCH_SIZE)
         
         current_states = [ e[0] for e in batch ]
-        next_states = [ e[3] if e[3] is not None else np.zeros((1,84,84), dtype=np.float32) for e in batch ]
+        next_states = [ e[3] for e in batch ]
         
         predicted_q_values = self.evaluation_network.predict(current_states)
         q_values_at_next_state = self.evaluation_network.predict(next_states)
@@ -55,9 +55,9 @@ class Agent:
         target_q_values = predicted_q_values
 
         for i in range(BATCH_SIZE):
-            current_state, current_action, reward, next_state = batch[i]
+            current_state, current_action, reward, next_state, is_done = batch[i]
 
-            if next_state is None:
+            if is_done:
                 target_q_values[i][current_action] = reward 
             else:
                 target_q_values[i][current_action] = reward  + DISCOUNT_FACTOR * np.max(q_values_at_next_state[i])

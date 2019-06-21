@@ -24,3 +24,27 @@ class SimpleReplayBuffer:
         return self.mem_counter >= self.capacity-1
 
 
+class FrameStacker:
+
+    def __init__(self, stack_size, frame_shape):
+        self.stack_size = stack_size
+        self.frame_shape = frame_shape
+        self.buffer = np.zeros(shape=(stack_size, *(frame_shape)))
+        self.full = False
+
+    def add_frame(self, frame):
+        if not self.full:
+            for i in range(self.stack_size):
+                self.buffer[i, :] = frame
+            self.full = True
+        else:
+            self.buffer[:-1,:] = self.buffer[1:,:]
+            self.buffer[-1,:] = frame
+        return np.copy(self.buffer)
+
+    def reset(self):
+        self.buffer = np.zeros(shape=(self.stack_size, *(self.frame_shape)))
+        self.full = False
+
+
+
