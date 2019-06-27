@@ -17,13 +17,19 @@ class Agent:
     steps = 0
     epsilon = MAX_EPSILON
 
-    def __init__(self, num_actions, observation_space_shape, replace_target=10, *args, **kwargs):
-        self.evaluation_policy = StackedFrameCNNPolicy(name='Evaluation Network', num_frames_to_stack=4, observation_space_shape=observation_space_shape, num_actions=num_actions)
-        #self.target_network = SimpleCNNPolicy(name='Target Network', observation_space_shape=observation_space_shape, num_actions=num_actions)
+    def __init__(self, num_actions, observation_space_shape, pretrained_policy=None, replace_target=None, explore=True, *args, **kwargs):
+        self.evaluation_policy = StackedFrameCNNPolicy(name='Evaluation Network', num_frames_to_stack=4, observation_space_shape=observation_space_shape, num_actions=num_actions, pretrained_policy=pretrained_policy)
+        self.replace_target = replace_target
+        if replace_target is not None:
+            if not isinstance(replace_target, int):
+                raise TypeError("replace_target must be integer representing number of steps after which target network is replaced by evaluation network")
+            self.target_network = StackedFrameCNNPolicy(name='Target Network', num_frames_to_stack=4, observation_space_shape=observation_space_shape, num_actions=num_actions, pretrained_policy=pretrained_policy)
         self.num_actions = num_actions
         self.observation_space_shape = observation_space_shape
         self.memory = SimpleReplayBuffer(REPLAY_BUFFER_CAPACITY)
         self.replace_target = replace_target
+        if not explore:
+            self.epsilon = 0.0
 
     def act(self, current_state):
         """
@@ -50,7 +56,8 @@ class Agent:
         next_states = [ e[3] for e in batch ]
         
         predicted_q_values = self.evaluation_policy.predict(current_states)
-        q_values_at_next_state = self.evaluation_policy.predict(next_states)
+        q_values_at_next_state = self.target_network.predict(next_states) if self.replace_target is not None \
+            else self.evaluation_policy.predict(current_states)
 
         target_q_values = predicted_q_values
 
@@ -68,7 +75,7 @@ class Agent:
             self.update_graph()
 
     def update_graph(self):
-        pass
-        #print("Updating...")
-        #self.target_network.q = self.evaluation_policy.q.clone('clone')
-        
+        print("Replacing target network with evaluation network...")
+        self.target_network.q = self.evaluation_policy.q.clone('clone')(self.target_network.image_frame)
+        #print(self.target_network., self.evaluation_policy.layers.conv_1)
+        print("Done replacing...")

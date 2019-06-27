@@ -53,7 +53,7 @@ NUM_EPISODES = 10000
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84))
+agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy=None, replace_target=10)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -164,7 +164,7 @@ print("Training Starts..")
 ep = avg_reward = 0
 while ep < NUM_EPISODES:
     if ep < 5000:
-        episode_reward = run(render=False)
+        episode_reward = run(render=True)
     else:
         episode_reward = run(render=True)
     print("Episode Terminated..")

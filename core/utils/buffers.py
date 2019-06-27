@@ -1,6 +1,7 @@
 import numpy as np
 import random
 
+
 class SimpleReplayBuffer:
 
     samples = []
@@ -45,6 +46,23 @@ class FrameStacker:
     def reset(self):
         self.buffer = np.zeros(shape=(self.stack_size, *(self.frame_shape)))
         self.full = False
+
+
+class EpisodicBuffer:
+
+    episode = []
+
+    def __init__(self):
+        pass
+
+    def add(self, sample):
+        self.episode.append(sample)
+
+    def get_episode(self):
+        return self.episode
+
+    def reset(self):
+        self.episode = []
 
 
 
