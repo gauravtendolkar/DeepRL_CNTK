@@ -1,6 +1,6 @@
 import cntk as C
 from cntk.train.trainer import Trainer
-from cntk.learners import sgd
+from cntk.learners import sgd, adam
 from utils.buffers import FrameStacker
 
 
@@ -69,7 +69,7 @@ class ActorStackedFrameCNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.log_probability, self.loss, [sgd(self.probabilities.parameters, lr=0.000001)])
+        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=0.00001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((self.num_frames_to_stack,) + self.observation_space_shape)
@@ -84,7 +84,8 @@ class ActorStackedFrameCNNPolicy:
             self.probabilities = C.layers.Dense(self.num_actions, name='dense_1', activation=C.softmax)(h)
         else:
             self.probabilities = C.Function.load(pretrained_policy)(self.image_frame)
-        self.log_probability = C.ops.log(C.ops.times_transpose(self.probabilities, one_hot_action))
+        selected_action_probablity = C.ops.times_transpose(self.probabilities, one_hot_action)
+        self.log_probability = C.ops.log(selected_action_probablity)
         self.loss = -self.td_error*self.log_probability
 
     def optimise(self, image_frame, td_error, action_index):
@@ -101,7 +102,7 @@ class CriticStackedFrameCNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.value, self.loss, [sgd(self.value.parameters, lr=0.000001)])
+        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=0.00001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((self.num_frames_to_stack,) + self.observation_space_shape)
@@ -114,13 +115,11 @@ class CriticStackedFrameCNNPolicy:
             self.value = C.layers.Dense(1, name='dense_1')(h)
         else:
             self.value = C.Function.load(pretrained_policy)(self.image_frame)
-        self.td_error = self.target_current_state_value - self.value
-        self.output = C.combine([self.value, self.td_error])
-        self.loss = C.mean(C.squared_error(self.target_current_state_value, self.value))
+        self.loss = C.squared_error(self.target_current_state_value, self.value)
 
     def optimise(self, image_frame, target_current_state_value):
         self.trainer.train_minibatch({self.image_frame: image_frame, self.target_current_state_value: target_current_state_value})
 
     def predict(self, image_frame):
-        return self.value.eval({self.image_frame: image_frame}),
+        return self.value.eval({self.image_frame: image_frame})
 

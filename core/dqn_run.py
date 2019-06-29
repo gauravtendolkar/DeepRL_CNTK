@@ -31,7 +31,7 @@ from utils.preprocessing import downscale
 import random
 
 # Create environment
-env = gym.make('Pong-v0', frameskip=5)
+env = gym.make('Pong-v0', frameskip=2)
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -53,7 +53,7 @@ NUM_EPISODES = 10000
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy=None, replace_target=10)
+agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy=None, replace_target=100)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -87,6 +87,7 @@ def run(render=False):
     cumulative_reward = 0
 
     while True:
+        print("Episode {}, Step {}, Cumulative Reward: {}, Epsilon: {}".format(ep, agent.steps, cumulative_reward, agent.epsilon))
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain actio
         current_action = agent.act(stacked_current_state)
@@ -163,10 +164,7 @@ print("Training Starts..")
 # Training code
 ep = avg_reward = 0
 while ep < NUM_EPISODES:
-    if ep < 5000:
-        episode_reward = run(render=True)
-    else:
-        episode_reward = run(render=True)
+    episode_reward = run(render=True)
     print("Episode Terminated..")
     avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
     ep += 1

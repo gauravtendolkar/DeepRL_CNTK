@@ -31,7 +31,7 @@ from utils.preprocessing import downscale
 import random
 
 # Create environment
-env = gym.make('Pong-v0', frameskip=5)
+env = gym.make('Pong-v0', frameskip=2)
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -91,7 +91,6 @@ def run(render=False):
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(stacked_current_state)
-
 
         # Take a step in environment
         next_state, reward, is_done, info = env.step(current_action)
@@ -166,7 +165,7 @@ print("Training Starts..")
 # Training code
 ep = avg_reward = 0
 while ep < NUM_EPISODES:
-    episode_reward = run(render=True)
+    episode_reward = run(render=False)
     print("Episode Terminated..")
     avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
     ep += 1
