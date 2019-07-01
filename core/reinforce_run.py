@@ -26,7 +26,7 @@ Navigate to core/agents/base.py
 
 # import required modules
 import gym
-from agents.a2c import RAMAgent
+from agents.reinforce import RAMAgent
 from utils.preprocessing import downscale
 import random
 import numpy as np
@@ -86,7 +86,6 @@ def run(render=False):
         # the learn method -
         # 1. samples uniformly random batch of experience from replay buffer
         # 2. perform one step of mini batch SGD on the policy
-        agent.learn()
 
         # The stacked next state becomes stacked current state and loop continues
         current_state = next_state
@@ -102,6 +101,8 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
+            agent.memory.calculate_targets()
+            agent.learn()
             return cumulative_reward
 
 
@@ -110,34 +111,13 @@ def run(render=False):
 current_state = env.reset()
 current_state = np.array(current_state, dtype=np.float32)
 
-print("Filling memory...")
-
-while not agent.memory.is_full():
-    # Take random action
-    current_action = random.randint(0, agent.num_actions-1)
-    # Take step
-    next_state, reward, is_done, info = env.step(current_action)
-    next_state = np.array(next_state, dtype=np.float32)
-
-    if is_done:
-        # Reset stack, reset environment
-        next_state = env.reset()
-        next_state = np.array(next_state, dtype=np.float32)
-
-    # add experience to replay buffer
-    agent.observe((current_state, current_action, reward, next_state, is_done))
-
 print("Training Starts..")
 
 # Training code
-ep = 1
-avg_reward = 0
+ep = avg_reward = 0
 while ep < NUM_EPISODES:
-    episode_reward = run(render=True)
+    episode_reward = run(render=False)
     print("Episode Terminated..")
     avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
     ep += 1
     print("Eisode {}: Average Reward {}, Epsilon: {}".format(ep, avg_reward, agent.epsilon))
-    if ep % 100 == 0:
-        agent.actor_policy.probabilities.save("pong_actor.model".format(ep))
-        agent.critic_policy.value.save("pong_critic.model".format(ep))
