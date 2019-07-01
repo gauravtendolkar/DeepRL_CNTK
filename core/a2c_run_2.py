@@ -102,8 +102,6 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            agent.actor_policy.probabilities.save("pong_actor_ep_{}.model".format(ep))
-            agent.critic_policy.value.save("pong_critic_ep_{}.model".format(ep))
             return cumulative_reward
 
 
@@ -132,10 +130,14 @@ while not agent.memory.is_full():
 print("Training Starts..")
 
 # Training code
-ep = avg_reward = 0
+ep = 1
+avg_reward = 0
 while ep < NUM_EPISODES:
-    episode_reward = run(render=False)
+    episode_reward = run(render=True)
     print("Episode Terminated..")
     avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
     ep += 1
     print("Eisode {}: Average Reward {}, Epsilon: {}".format(ep, avg_reward, agent.epsilon))
+    if ep % 100 == 0:
+        agent.actor_policy.probabilities.save("pong_actor.model".format(ep))
+        agent.critic_policy.value.save("pong_critic.model".format(ep))
