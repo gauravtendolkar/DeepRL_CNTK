@@ -15,8 +15,8 @@ class SimpleNNPolicy:
     def _build_network(self, pretrained_policy):
         self.input = C.input_variable(self.observation_space_shape, name='image frame')
         if pretrained_policy is None:
-            h = C.layers.Dense(64, activation=C.relu, name='dense_1')(self.input)
-            h = C.layers.Dense(32, activation=C.relu, name='dense_1')(h)
+            h = C.layers.Dense(32, activation=C.relu, name='dense_1')(self.input)
+            h = C.layers.Dense(8, activation=C.relu, name='dense_1')(h)
             self.q = C.layers.Dense(self.num_actions, name='dense_1')(h)
         else:
             self.q = C.Function.load(pretrained_policy)(self.input)

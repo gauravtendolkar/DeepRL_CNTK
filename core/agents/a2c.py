@@ -95,7 +95,6 @@ class RAMAgent:
         """
         # Exploitation: Return index of action with highest Q value at current state, as determined by evaluation network
         probabilities = np.squeeze(self.actor_policy.predict(current_state))
-        print(list(probabilities))
         return np.random.choice(range(self.num_actions), 1, p=probabilities)
 
     def observe(self, sample):
