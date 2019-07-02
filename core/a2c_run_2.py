@@ -32,7 +32,7 @@ import random
 import numpy as np
 
 # Create environment
-env = gym.make('Pong-ram-v0', frameskip=2)
+env = gym.make('CartPole-v1')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -48,7 +48,7 @@ NUM_ACTION_VALUES = env.action_space.n
 # https://github.com/openai/gym/blob/master/gym/spaces/discrete.py
 
 # Set number of episodes to train
-NUM_EPISODES = 1000
+NUM_EPISODES = 100000
 
 # Since we have a single discrete action - continuous/discrete observation space problem,
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
@@ -67,7 +67,6 @@ def run(render=False):
     cumulative_reward = 0
 
     while True:
-        print("Episode {}, Step {}, Cumulative Reward: {}".format(ep, agent.steps, cumulative_reward))
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(current_state)
@@ -130,14 +129,17 @@ while not agent.memory.is_full():
 print("Training Starts..")
 
 # Training code
-ep = 1
-avg_reward = 0
+ep = 0
+episode_rewards = []
 while ep < NUM_EPISODES:
     episode_reward = run(render=True)
+    episode_rewards.append(episode_reward)
     print("Episode Terminated..")
-    avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
     ep += 1
-    print("Eisode {}: Average Reward {}, Epsilon: {}".format(ep, avg_reward, agent.epsilon))
-    if ep % 100 == 0:
-        agent.actor_policy.probabilities.save("pong_actor.model".format(ep))
-        agent.critic_policy.value.save("pong_critic.model".format(ep))
+    if ep > 101:
+        avg_reward = np.mean(episode_rewards[-100:])
+        print("Episode {}: Average Reward in past 100 eisodes {}, Epsilon: {}, Stes: {}".format(ep, np.mean(episode_rewards[-100:]),
+                                                                                                agent.epsilon,
+                                                                                                agent.steps))
+        if avg_reward > 190:
+            break

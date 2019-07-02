@@ -7,9 +7,9 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-MAX_EPSILON = 1.0
-REPLAY_BUFFER_CAPACITY = 1000
-STEPS_BEFORE_EPSILON_DECAY = 500000
+MAX_EPSILON = 0.1
+REPLAY_BUFFER_CAPACITY = 50000
+STEPS_BEFORE_EPSILON_DECAY = 1000
 BATCH_SIZE = 32
 TERMINAL_STATE = None
 DISCOUNT_FACTOR = 0.99
@@ -95,7 +95,7 @@ class RAMAgent:
         """
         # Exploitation: Return index of action with highest Q value at current state, as determined by evaluation network
         probabilities = np.squeeze(self.actor_policy.predict(current_state))
-        return np.random.choice(range(self.num_actions), 1, p=probabilities)
+        return np.random.choice(range(self.num_actions), 1, p=probabilities)[0]
 
     def observe(self, sample):
         self.steps += 1

@@ -6,9 +6,9 @@ from utils.buffers import SimpleReplayBuffer
 import warnings
 warnings.filterwarnings("ignore")
 
-MAX_EPSILON = 1.0
-REPLAY_BUFFER_CAPACITY = 5000
-STEPS_BEFORE_EPSILON_DECAY = 500000
+MAX_EPSILON = 0.0
+REPLAY_BUFFER_CAPACITY = 50000
+STEPS_BEFORE_EPSILON_DECAY = 1000
 BATCH_SIZE = 32
 TERMINAL_STATE = None
 DISCOUNT_FACTOR = 0.999
@@ -120,7 +120,7 @@ class RAMAgent:
         self.steps += 1
         self.memory.add(sample)
         if self.steps >= STEPS_BEFORE_EPSILON_DECAY:
-            self.epsilon = max(0.99999*self.epsilon, 0.1)
+            self.epsilon = 0.99999*self.epsilon
 
     def learn(self):
         batch = self.memory.sample(BATCH_SIZE)
@@ -144,7 +144,7 @@ class RAMAgent:
 
         self.evaluation_policy.optimise(current_states, target_q_values)
 
-        if self.steps % self.replace_target == 0:
+        if self.replace_target is not None and self.steps % self.replace_target == 0:
             self.update_graph()
 
     def update_graph(self):

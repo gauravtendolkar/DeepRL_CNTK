@@ -30,9 +30,10 @@ from agents.dqn import RAMAgent
 from utils.preprocessing import downscale
 import random
 import numpy as np
+import time
 
 # Create environment
-env = gym.make('Pong-ram-v0', frameskip=2)
+env = gym.make('CartPole-v0')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -40,7 +41,7 @@ env = gym.make('Pong-ram-v0', frameskip=2)
 NUM_STATES = env.observation_space.shape
 # Attribute observation_space returns a Box class instance which has attribute shape
 
-NUM_ACTION_VALUES = 3#env.action_space.n
+NUM_ACTION_VALUES = env.action_space.n
 # NOTE: Atari games are single action which can have multiple values (eg: up=1, down=-1, etc)
 # The action space returned is of class Discrete which has a public attribute n
 # which tells how many values the action can have. There is no attribute shape on class Discrete (which is inconvinient)
@@ -71,7 +72,7 @@ def run(render=False):
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(current_state)
-        action_to_take = current_action + 1 #1=nothing, 2=up, 3=down
+        action_to_take = current_action #+ 1 #1=nothing, 2=up, 3=down
 
         # Take a step in environment
         next_state, reward, is_done, info = env.step(action_to_take)
@@ -103,7 +104,7 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            agent.evaluation_policy.q.save("crosser_ram.model")
+            agent.evaluation_policy.q.save("cartpole.model")
             return cumulative_reward
 
 
@@ -117,7 +118,7 @@ print("Filling memory...")
 while not agent.memory.is_full():
     # Take random action
     current_action = random.randint(0, agent.num_actions-1)
-    action_to_take = current_action + 1 #1=nothing, 2=up, 3=down
+    action_to_take = current_action #+ 1 #1=nothing, 2=up, 3=down
     # Take step
     next_state, reward, is_done, info = env.step(action_to_take)
     next_state = np.array(next_state, dtype=np.float32)
@@ -138,10 +139,11 @@ while ep < NUM_EPISODES:
     episode_reward = run(render=True)
     print("Episode Terminated..")
 
-    if ep % 10 == 0:
+    if ep % 100 == 0:
         ep_for_avg = avg_reward = 0
 
-    avg_reward = (avg_reward * ep + episode_reward) / (ep_for_avg + 1)
+    avg_reward = (avg_reward * ep_for_avg + episode_reward) / (ep_for_avg + 1)
     ep += 1
     ep_for_avg += 1
-    print("Episode {}: Average Reward in past 10 eisodes {}, Epsilon: {}, Stes: {}".format(ep, avg_reward, agent.epsilon, agent.steps))
+    print("Episode {}: Average Reward in past 100 eisodes {}, Epsilon: {}, Stes: {}".format(ep, avg_reward, agent.epsilon, agent.steps))
+    time.sleep(0.5)

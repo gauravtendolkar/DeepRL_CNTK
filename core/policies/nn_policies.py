@@ -10,18 +10,18 @@ class SimpleNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.q, self.loss, [sgd(self.q.parameters, lr=0.000001)])
+        self.trainer = Trainer(self.q, self.loss, [sgd(self.q.parameters, lr=5e-4)])
 
     def _build_network(self, pretrained_policy):
         self.input = C.input_variable(self.observation_space_shape, name='image frame')
         if pretrained_policy is None:
-            h = C.layers.Dense(32, activation=C.relu, name='dense_1')(self.input)
-            h = C.layers.Dense(8, activation=C.relu, name='dense_1')(h)
-            self.q = C.layers.Dense(self.num_actions, name='dense_1')(h)
+            h = C.layers.Dense(64, activation=C.relu, name='dense_1')(self.input)
+            h = C.layers.Dense(64, activation=C.relu, name='dense_2')(h)
+            self.q = C.layers.Dense(self.num_actions, activation=None, name='output')(h)
         else:
             self.q = C.Function.load(pretrained_policy)(self.input)
         self.q_target = C.input_variable(self.num_actions, name='q_target')
-        self.loss = C.mean(C.losses.squared_error(self.q_target, self.q))
+        self.loss = C.losses.squared_error(self.q_target, self.q)
 
     def optimise(self, state, q_target):
         self.trainer.train_minibatch({self.input : state, self.q_target : q_target})
@@ -36,7 +36,7 @@ class ActorNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=0.00001, momentum=0.9)])
+        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=0.0001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.input = C.input_variable(self.observation_space_shape)
@@ -45,8 +45,8 @@ class ActorNNPolicy:
         one_hot_action = C.ops.squeeze(C.one_hot(self.action_index, self.num_actions))
         if pretrained_policy is None:
             h = C.layers.Dense(64, activation=C.relu, name='dense_1')(self.input)
-            h = C.layers.Dense(32, activation=C.tanh, name='dense_1')(h)
-            self.probabilities = C.layers.Dense(self.num_actions, name='dense_1', activation=C.softmax)(h)
+            h = C.layers.Dense(64, activation=C.tanh, name='dense_2')(h)
+            self.probabilities = C.layers.Dense(self.num_actions, name='dense_3', activation=C.softmax)(h)
         else:
             self.probabilities = C.Function.load(pretrained_policy)(self.input)
         selected_action_probablity = C.ops.times_transpose(self.probabilities, one_hot_action)
@@ -66,15 +66,15 @@ class CriticNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=0.00001, momentum=0.9)])
+        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=0.0001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.input = C.input_variable(self.observation_space_shape)
         self.target_current_state_value = C.input_variable((1,))
         if pretrained_policy is None:
             h = C.layers.Dense(64, activation=C.relu, name='dense_1')(self.input)
-            h = C.layers.Dense(32, activation=C.relu, name='dense_1')(h)
-            self.value = C.layers.Dense(1, name='dense_1')(h)
+            h = C.layers.Dense(64, activation=C.relu, name='dense_2')(h)
+            self.value = C.layers.Dense(1, name='dense_3')(h)
         else:
             self.value = C.Function.load(pretrained_policy)(self.input)
         self.loss = C.squared_error(self.target_current_state_value, self.value)
