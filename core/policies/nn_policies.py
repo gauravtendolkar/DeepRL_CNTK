@@ -36,7 +36,7 @@ class ActorNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=0.0001, momentum=0.9)])
+        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=0.001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.input = C.input_variable(self.observation_space_shape)
@@ -66,7 +66,7 @@ class CriticNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=0.0001, momentum=0.9)])
+        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=0.001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.input = C.input_variable(self.observation_space_shape)

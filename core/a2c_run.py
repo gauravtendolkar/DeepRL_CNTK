@@ -26,12 +26,14 @@ Navigate to core/agents/base.py
 
 # import required modules
 import gym
-from agents.a2c import Agent
+from agents.a2c import FrameSubstractingAgent
+from utils.buffers import FrameSubtractor
 from utils.preprocessing import downscale
 import random
+import numpy as np
 
 # Create environment
-env = gym.make('Pong-v0', frameskip=2)
+env = gym.make('Pong-v0')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -47,67 +49,39 @@ NUM_ACTION_VALUES = env.action_space.n
 # https://github.com/openai/gym/blob/master/gym/spaces/discrete.py
 
 # Set number of episodes to train
-NUM_EPISODES = 10000
+NUM_EPISODES = 100000
 
 # Since we have a single discrete action - continuous/discrete observation space problem,
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy=None, replace_target=10)
+agent = FrameSubstractingAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84,84), actor_pretrained_policy=None, critic_pretrained_policy=None)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
 def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
     current_state = env.reset()
-    # 3 RGB channels are excess information. The environment has multicolor stuff in it, so to use just one channel,
-    # we could just take the red channel. Remember that this does not work for all environments
-    # (for example, environment containing pure blue and green elements would be indistinguishable).
-    # It is generally a good idea to convert to YCbCr and use luma component of the image as a single channel image
-
-    # We also downscale image to 84x84 pixels. (Generally OK for most Atari games)
-    # It is a good idea to visualise current_state after all the pre processing just to check if it makes sense
-    # Downscaled, luma channel image -
-    # https://github.com/codetendolkar/DeepRL_CNTK/blob/master/core/media/downscaled_image.PNG
     current_state = downscale(current_state)
-
-    # IMPORTANT NOTE: A simgle image does not give enough information to the agent. For example, if the ball is in
-    # center of screen in image, the pong agent does not know whether it is going up or down.
-    # Information from multiple frames is necessary to play effectively. For some games like tic-tac-toe,
-    # multiple frames is not necessary. Multi frame information can be obtained by either stitching
-    # multiple sequential frames together or just using multiple sequential frames as a multichannel image.
-    # We will use the latter.
-
-    # Remember that Policy architecture depends on its inputs. Therefore in this case we have to
-    # choose StackedFrameCNNPolicy (will be described later) which accepts stacked sequential frames as input.
-    # The policy has a buffer of stack size where we keep adding states of environment using add_frame method
-    stacked_current_state = agent.frame_stacker.add_frame(current_state)
 
     # Set cumulative episode reward to 0
     cumulative_reward = 0
 
     while True:
-        print("Episode {}, Step {}, Cumulative Reward: {}".format(ep, agent.steps, cumulative_reward))
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
-        current_action = agent.act(stacked_current_state)
+        current_action = agent.act(current_state)
 
         # Take a step in environment
         next_state, reward, is_done, info = env.step(current_action)
-
-        # next_state returned by environment is again single RGB [210 x 160 x 3] image
-        # so we downscale it and use stack containing previous three frames and
-        # downscaled next_state as stacked_next_state
         next_state = downscale(next_state)
-        stacked_next_state = agent.frame_stacker.add_frame(next_state)
 
         # NOTE: Remember to reset the frame stacker buffer when episode ends
         if is_done:
             print("Episode Terminated...")
-            agent.frame_stacker.reset()
 
         # the observe method of an agent adds the experience to a experience replay buffer
-        agent.observe((stacked_current_state, current_action, reward, stacked_next_state, is_done))
+        agent.observe((current_state, current_action, reward, next_state, is_done))
 
         # the learn method -
         # 1. samples uniformly random batch of experience from replay buffer
@@ -115,7 +89,7 @@ def run(render=False):
         agent.learn()
 
         # The stacked next state becomes stacked current state and loop continues
-        stacked_current_state = stacked_next_state
+        current_state = next_state
 
         # Add reward to cumulative episode reward
         cumulative_reward += reward
@@ -128,8 +102,9 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            agent.actor_policy.probabilities.save("pong_actor_ep_{}.model".format(ep))
-            agent.critic_policy.value.save("pong_critic_ep_{}.model".format(ep))
+            agent.actor_policy.probabilities.save("Pong-v0.actor.model")
+            agent.critic_policy.value.save("Pong-v0.critic.model")
+            agent.frame_preprocessor.reset()
             return cumulative_reward
 
 
@@ -137,7 +112,6 @@ def run(render=False):
 # So we take random actions till fill buffer, but not do a gradient descent pass
 current_state = env.reset()
 current_state = downscale(current_state)
-stacked_current_state = agent.frame_stacker.add_frame(current_state)
 
 print("Filling memory...")
 
@@ -146,27 +120,32 @@ while not agent.memory.is_full():
     current_action = random.randint(0, agent.num_actions-1)
     # Take step
     next_state, reward, is_done, info = env.step(current_action)
-    # Downscale and add to stack
     next_state = downscale(next_state)
-    stacked_next_state = agent.frame_stacker.add_frame(next_state)
+
+    # add experience to replay buffer
+    agent.observe((current_state, current_action, reward, next_state, is_done))
 
     if is_done:
         # Reset stack, reset environment
-        agent.frame_stacker.reset()
         next_state = env.reset()
         next_state = downscale(next_state)
-        stacked_next_state = agent.frame_stacker.add_frame(next_state)
+        agent.frame_preprocessor.reset()
 
-    # add experience to replay buffer
-    agent.observe((stacked_current_state, current_action, reward, stacked_next_state, is_done))
 
 print("Training Starts..")
 
 # Training code
-ep = avg_reward = 0
+ep = 0
+episode_rewards = []
 while ep < NUM_EPISODES:
     episode_reward = run(render=False)
-    print("Episode Terminated..")
-    avg_reward = (avg_reward*ep + episode_reward)/(ep+1)
+    episode_rewards.append(episode_reward)
+    print("Episode {} Terminated with reward {}..".format(ep, episode_reward))
     ep += 1
-    print("Eisode {}: Average Reward {}, Epsilon: {}".format(ep, avg_reward, agent.epsilon))
+    if ep > 101:
+        avg_reward = np.mean(episode_rewards[-100:])
+        print("Episode {}: Average Reward in past 100 eisodes {}, Epsilon: {}, Stes: {}".format(ep, np.mean(episode_rewards[-100:]),
+                                                                                                agent.epsilon,
+                                                                                                agent.steps))
+        if avg_reward > -3:
+            break
