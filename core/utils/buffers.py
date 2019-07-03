@@ -49,6 +49,20 @@ class FrameStacker:
         self.full = False
 
 
+class FrameSubtractor:
+
+    def __init__(self):
+        self.old_frame = None
+
+    def add_frame(self, frame):
+        if self.old_frame is None:
+            self.old_frame = frame
+        return frame - self.old_frame
+
+    def reset(self):
+        self.old_frame = None
+
+
 class EpisodicBuffer:
 
     episode = []
