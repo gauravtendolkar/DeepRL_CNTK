@@ -33,7 +33,7 @@ import numpy as np
 import time
 
 # Create environment
-env = gym.make('CartPole-v1')
+env = gym.make('PongNoFrameskip-v4')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -55,7 +55,7 @@ NUM_EPISODES = 200000
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = RAMAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=NUM_STATES, pretrained_policy="cartpole_v1.model", replace_target=None)
+agent = RAMAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=NUM_STATES, pretrained_policy=None, replace_target=1000)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -84,7 +84,7 @@ def run(render=False):
         # the learn method -
         # 1. samples uniformly random batch of experience from replay buffer
         # 2. perform one step of mini batch SGD on the policy
-        #agent.learn()
+        agent.learn()
 
         # The stacked next state becomes stacked current state and loop continues
         current_state = next_state
@@ -100,7 +100,7 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            #agent.evaluation_policy.q.save("cartpole_v1.model")
+            agent.evaluation_policy.q.save("pong_dqn.model")
             return cumulative_reward
 
 
@@ -111,21 +111,21 @@ current_state = np.array(current_state, dtype=np.float32)
 
 print("Filling memory...")
 
-# while not agent.memory.mem_counter >= 1000:
-#     # Take random action
-#     current_action = random.randint(0, agent.num_actions-1)
-#     action_to_take = current_action #+ 1 #1=nothing, 2=up, 3=down
-#     # Take step
-#     next_state, reward, is_done, info = env.step(action_to_take)
-#     next_state = np.array(next_state, dtype=np.float32)
-#
-#     if is_done:
-#         # Reset stack, reset environment
-#         next_state = env.reset()
-#         next_state = np.array(next_state, dtype=np.float32)
-#
-#     # add experience to replay buffer
-#     agent.observe((current_state, current_action, reward, next_state, is_done))
+while not agent.memory.mem_counter >= 1000:
+    # Take random action
+    current_action = random.randint(0, agent.num_actions-1)
+    action_to_take = current_action #+ 1 #1=nothing, 2=up, 3=down
+    # Take step
+    next_state, reward, is_done, info = env.step(action_to_take)
+    next_state = np.array(next_state, dtype=np.float32)
+
+    if is_done:
+        # Reset stack, reset environment
+        next_state = env.reset()
+        next_state = np.array(next_state, dtype=np.float32)
+
+    # add experience to replay buffer
+    agent.observe((current_state, current_action, reward, next_state, is_done))
 
 print("Training Starts..")
 
@@ -133,7 +133,7 @@ print("Training Starts..")
 ep = 0
 episode_rewards = []
 while ep < NUM_EPISODES:
-    episode_reward = run(render=True)
+    episode_reward = run(render=False)
     episode_rewards.append(episode_reward)
     print("Episode Terminated..")
     ep += 1
@@ -142,5 +142,5 @@ while ep < NUM_EPISODES:
         print("Episode {}: Average Reward in past 100 eisodes {}, Epsilon: {}, Stes: {}".format(ep, np.mean(episode_rewards[-100:]),
                                                                                                 agent.epsilon,
                                                                                                 agent.steps))
-        if avg_reward > 190:
+        if avg_reward > -1:
             break

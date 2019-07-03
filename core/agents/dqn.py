@@ -6,12 +6,12 @@ from utils.buffers import SimpleReplayBuffer
 import warnings
 warnings.filterwarnings("ignore")
 
-MAX_EPSILON = 0.0
+MAX_EPSILON = 0.1
 REPLAY_BUFFER_CAPACITY = 50000
 STEPS_BEFORE_EPSILON_DECAY = 1000
 BATCH_SIZE = 32
 TERMINAL_STATE = None
-DISCOUNT_FACTOR = 0.999
+DISCOUNT_FACTOR = 0.99
 
 
 class Agent:
@@ -48,7 +48,7 @@ class Agent:
         self.steps += 1
         self.memory.add(sample)
         if self.steps >= STEPS_BEFORE_EPSILON_DECAY:
-            self.epsilon *= 0.999995
+            self.epsilon *= 1
 
     def learn(self):
         batch = self.memory.sample(BATCH_SIZE)
@@ -119,8 +119,8 @@ class RAMAgent:
     def observe(self, sample):
         self.steps += 1
         self.memory.add(sample)
-        if self.steps >= STEPS_BEFORE_EPSILON_DECAY:
-            self.epsilon = 0.99999*self.epsilon
+        #if self.steps >= STEPS_BEFORE_EPSILON_DECAY:
+        #    self.epsilon = 0.99999*self.epsilon
 
     def learn(self):
         batch = self.memory.sample(BATCH_SIZE)
