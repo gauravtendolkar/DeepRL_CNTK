@@ -32,7 +32,7 @@ import random
 import numpy as np
 
 # Create environment
-env = gym.make('CartPole-v1')
+env = gym.make('Pong-ram-v0')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -54,7 +54,7 @@ NUM_EPISODES = 100000
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = RAMAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=NUM_STATES, pretrained_policy=None)
+agent = RAMAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=NUM_STATES, actor_pretrained_policy=None, critic_pretrained_policy=None)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -101,6 +101,8 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
+            agent.actor_policy.probabilities.save("Pong-ram-v0.actor.model")
+            agent.critic_policy.value.save("Pong-ram-v0.critic.model")
             return cumulative_reward
 
 
@@ -141,5 +143,5 @@ while ep < NUM_EPISODES:
         print("Episode {}: Average Reward in past 100 eisodes {}, Epsilon: {}, Stes: {}".format(ep, np.mean(episode_rewards[-100:]),
                                                                                                 agent.epsilon,
                                                                                                 agent.steps))
-        if avg_reward > 190:
+        if avg_reward > -3:
             break

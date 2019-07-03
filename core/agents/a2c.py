@@ -78,11 +78,11 @@ class RAMAgent:
     steps = 0
     epsilon = MAX_EPSILON
 
-    def __init__(self, num_actions, observation_space_shape, pretrained_policy=None, *args, **kwargs):
+    def __init__(self, num_actions, observation_space_shape, actor_pretrained_policy=None, critic_pretrained_policy=None, *args, **kwargs):
         self.actor_policy = ActorNNPolicy(name='Actor Network', observation_space_shape=observation_space_shape,
-                                                       num_actions=num_actions, pretrained_policy=pretrained_policy)
+                                                       num_actions=num_actions, pretrained_policy=actor_pretrained_policy)
         self.critic_policy = CriticNNPolicy(name='Critic Network', observation_space_shape=observation_space_shape,
-                                                         num_actions=num_actions, pretrained_policy=pretrained_policy)
+                                                         num_actions=num_actions, pretrained_policy=critic_pretrained_policy)
 
         self.num_actions = num_actions
         self.observation_space_shape = observation_space_shape
