@@ -33,7 +33,7 @@ import numpy as np
 import time
 
 # Create environment
-env = gym.make('PongNoFrameskip-v4')
+env = gym.make('Pong-ram-v0', frameskip=5)
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code

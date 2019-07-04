@@ -33,7 +33,7 @@ import random
 import numpy as np
 
 # Create environment
-env = gym.make('Pong-v0')
+env = gym.make('Pong-v0', frameskip=5)
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
