@@ -63,6 +63,7 @@ def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
     current_state = env.reset()
     current_state = downscale(current_state)
+    current_state = agent.frame_preprocessor.add_frame(current_state)
 
     # Set cumulative episode reward to 0
     cumulative_reward = 0
@@ -75,6 +76,7 @@ def run(render=False):
         # Take a step in environment
         next_state, reward, is_done, info = env.step(current_action)
         next_state = downscale(next_state)
+        next_state = agent.frame_preprocessor.add_frame(next_state)
 
         # NOTE: Remember to reset the frame stacker buffer when episode ends
         if is_done:
@@ -112,6 +114,7 @@ def run(render=False):
 # So we take random actions till fill buffer, but not do a gradient descent pass
 current_state = env.reset()
 current_state = downscale(current_state)
+current_state = agent.frame_preprocessor.add_frame(current_state)
 
 print("Filling memory...")
 
@@ -121,15 +124,17 @@ while not agent.memory.is_full():
     # Take step
     next_state, reward, is_done, info = env.step(current_action)
     next_state = downscale(next_state)
+    next_state = agent.frame_preprocessor.add_frame(next_state)
 
     # add experience to replay buffer
     agent.observe((current_state, current_action, reward, next_state, is_done))
 
     if is_done:
         # Reset stack, reset environment
+        agent.frame_preprocessor.reset()
         next_state = env.reset()
         next_state = downscale(next_state)
-        agent.frame_preprocessor.reset()
+        next_state = agent.frame_preprocessor.add_frame(next_state)
 
 
 print("Training Starts..")

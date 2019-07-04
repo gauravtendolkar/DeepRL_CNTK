@@ -151,7 +151,6 @@ class FrameSubstractingAgent:
         But epsilon decays as we gain experience and we start taking policy determined actions, i.e. the action with highest Q value at current state, as determined by evaluation network
         """
         # Exploitation: Return index of action with highest Q value at current state, as determined by evaluation network
-        current_state = self.frame_preprocessor.add_frame(current_state)
         probabilities = np.squeeze(self.actor_policy.predict(current_state))
         return np.random.choice(range(self.num_actions), 1, p=probabilities)
 
