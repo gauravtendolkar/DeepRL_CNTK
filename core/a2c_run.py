@@ -33,7 +33,7 @@ import random
 import numpy as np
 
 # Create environment
-env = gym.make('Pong-v0')
+env = gym.make('Pong-v0', frameskip=5)
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -63,6 +63,7 @@ def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
     current_state = env.reset()
     current_state = downscale(current_state)
+    current_state = agent.frame_preprocessor.add_frame(current_state)
 
     # Set cumulative episode reward to 0
     cumulative_reward = 0
@@ -75,6 +76,7 @@ def run(render=False):
         # Take a step in environment
         next_state, reward, is_done, info = env.step(current_action)
         next_state = downscale(next_state)
+        next_state = agent.frame_preprocessor.add_frame(next_state)
 
         # NOTE: Remember to reset the frame stacker buffer when episode ends
         if is_done:
@@ -86,7 +88,7 @@ def run(render=False):
         # the learn method -
         # 1. samples uniformly random batch of experience from replay buffer
         # 2. perform one step of mini batch SGD on the policy
-        agent.learn()
+
 
         # The stacked next state becomes stacked current state and loop continues
         current_state = next_state
@@ -102,35 +104,12 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
+            agent.learn()
             agent.actor_policy.probabilities.save("Pong-v0.actor.model")
             agent.critic_policy.value.save("Pong-v0.critic.model")
             agent.frame_preprocessor.reset()
+            agent.memory.reset()
             return cumulative_reward
-
-
-# NOTE: Before we start training, we need to fill the buffer to sample from.
-# So we take random actions till fill buffer, but not do a gradient descent pass
-current_state = env.reset()
-current_state = downscale(current_state)
-
-print("Filling memory...")
-
-while not agent.memory.is_full():
-    # Take random action
-    current_action = random.randint(0, agent.num_actions-1)
-    # Take step
-    next_state, reward, is_done, info = env.step(current_action)
-    next_state = downscale(next_state)
-
-    # add experience to replay buffer
-    agent.observe((current_state, current_action, reward, next_state, is_done))
-
-    if is_done:
-        # Reset stack, reset environment
-        next_state = env.reset()
-        next_state = downscale(next_state)
-        agent.frame_preprocessor.reset()
-
 
 print("Training Starts..")
 
@@ -138,7 +117,7 @@ print("Training Starts..")
 ep = 0
 episode_rewards = []
 while ep < NUM_EPISODES:
-    episode_reward = run(render=False)
+    episode_reward = run(render=True)
     episode_rewards.append(episode_reward)
     print("Episode {} Terminated with reward {}..".format(ep, episode_reward))
     ep += 1

@@ -33,7 +33,7 @@ import numpy as np
 import time
 
 # Create environment
-env = gym.make('CartPole-v0')
+env = gym.make('LunarLander-v2')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -104,7 +104,7 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            agent.evaluation_policy.q.save("cartpole.model")
+            agent.evaluation_policy.q.save("LunarLander.model")
             return cumulative_reward
 
 

@@ -26,14 +26,14 @@ Navigate to core/agents/base.py
 
 # import required modules
 import gym
-from agents.dqn import RAMAgent
+from agents.a2c import FrameSubstractingAgent
+from utils.buffers import FrameSubtractor
 from utils.preprocessing import downscale
 import random
 import numpy as np
-import time
 
 # Create environment
-env = gym.make('CartPole-v1')
+env = gym.make('Pong-v0')
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -49,34 +49,38 @@ NUM_ACTION_VALUES = env.action_space.n
 # https://github.com/openai/gym/blob/master/gym/spaces/discrete.py
 
 # Set number of episodes to train
-NUM_EPISODES = 200000
+NUM_EPISODES = 100000
 
 # Since we have a single discrete action - continuous/discrete observation space problem,
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = RAMAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=NUM_STATES, pretrained_policy="cartpole_v1.model", replace_target=None)
+agent = FrameSubstractingAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84,84), actor_pretrained_policy=None, critic_pretrained_policy=None)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
 def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
     current_state = env.reset()
-    current_state = np.array(current_state, dtype=np.float32)
+    current_state = downscale(current_state)
+    current_state = agent.frame_preprocessor.add_frame(current_state)
 
     # Set cumulative episode reward to 0
     cumulative_reward = 0
 
     while True:
-        #print("Episode {}, Step {}, Cumulative Reward: {}, Epsilon: {}".format(ep, agent.steps, cumulative_reward, agent.epsilon))
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(current_state)
-        action_to_take = current_action #+ 1 #1=nothing, 2=up, 3=down
 
         # Take a step in environment
-        next_state, reward, is_done, info = env.step(action_to_take)
-        next_state = np.array(next_state, dtype=np.float32)
+        next_state, reward, is_done, info = env.step(current_action)
+        next_state = downscale(next_state)
+        next_state = agent.frame_preprocessor.add_frame(next_state)
+
+        # NOTE: Remember to reset the frame stacker buffer when episode ends
+        if is_done:
+            print("Episode Terminated...")
 
         # the observe method of an agent adds the experience to a experience replay buffer
         agent.observe((current_state, current_action, reward, next_state, is_done))
@@ -84,7 +88,7 @@ def run(render=False):
         # the learn method -
         # 1. samples uniformly random batch of experience from replay buffer
         # 2. perform one step of mini batch SGD on the policy
-        #agent.learn()
+        agent.learn()
 
         # The stacked next state becomes stacked current state and loop continues
         current_state = next_state
@@ -100,32 +104,38 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            #agent.evaluation_policy.q.save("cartpole_v1.model")
+            agent.actor_policy.probabilities.save("Pong-v0.actor.model")
+            agent.critic_policy.value.save("Pong-v0.critic.model")
+            agent.frame_preprocessor.reset()
             return cumulative_reward
 
 
 # NOTE: Before we start training, we need to fill the buffer to sample from.
 # So we take random actions till fill buffer, but not do a gradient descent pass
 current_state = env.reset()
-current_state = np.array(current_state, dtype=np.float32)
+current_state = downscale(current_state)
+current_state = agent.frame_preprocessor.add_frame(current_state)
 
 print("Filling memory...")
 
-# while not agent.memory.mem_counter >= 1000:
-#     # Take random action
-#     current_action = random.randint(0, agent.num_actions-1)
-#     action_to_take = current_action #+ 1 #1=nothing, 2=up, 3=down
-#     # Take step
-#     next_state, reward, is_done, info = env.step(action_to_take)
-#     next_state = np.array(next_state, dtype=np.float32)
-#
-#     if is_done:
-#         # Reset stack, reset environment
-#         next_state = env.reset()
-#         next_state = np.array(next_state, dtype=np.float32)
-#
-#     # add experience to replay buffer
-#     agent.observe((current_state, current_action, reward, next_state, is_done))
+while not agent.memory.is_full():
+    # Take random action
+    current_action = random.randint(0, agent.num_actions-1)
+    # Take step
+    next_state, reward, is_done, info = env.step(current_action)
+    next_state = downscale(next_state)
+    next_state = agent.frame_preprocessor.add_frame(next_state)
+
+    # add experience to replay buffer
+    agent.observe((current_state, current_action, reward, next_state, is_done))
+
+    if is_done:
+        # Reset stack, reset environment
+        next_state = env.reset()
+        next_state = downscale(next_state)
+        agent.frame_preprocessor.reset()
+        next_state = agent.frame_preprocessor.add_frame(next_state)
+
 
 print("Training Starts..")
 
@@ -135,12 +145,12 @@ episode_rewards = []
 while ep < NUM_EPISODES:
     episode_reward = run(render=True)
     episode_rewards.append(episode_reward)
-    print("Episode Terminated..")
+    print("Episode {} Terminated with reward {}..".format(ep, episode_reward))
     ep += 1
     if ep > 101:
         avg_reward = np.mean(episode_rewards[-100:])
         print("Episode {}: Average Reward in past 100 eisodes {}, Epsilon: {}, Stes: {}".format(ep, np.mean(episode_rewards[-100:]),
                                                                                                 agent.epsilon,
                                                                                                 agent.steps))
-        if avg_reward > 190:
+        if avg_reward > -3:
             break
