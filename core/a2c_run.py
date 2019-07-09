@@ -33,7 +33,7 @@ import random
 import numpy as np
 
 # Create environment
-env = gym.make('Pong-v0', frameskip=5)
+env = gym.make('Pong-v0', frameskip=2)
 
 # Obtain State and Action spaces specific to the environment
 # Note that following two lines are OpenAI gym environment specific code
@@ -41,7 +41,7 @@ env = gym.make('Pong-v0', frameskip=5)
 NUM_STATES = env.observation_space.shape
 # Attribute observation_space returns a Box class instance which has attribute shape
 
-NUM_ACTION_VALUES = env.action_space.n
+NUM_ACTION_VALUES = 3#env.action_space.n
 # NOTE: Atari games are single action which can have multiple values (eg: up=1, down=-1, etc)
 # The action space returned is of class Discrete which has a public attribute n
 # which tells how many values the action can have. There is no attribute shape on class Discrete (which is inconvinient)
@@ -72,9 +72,10 @@ def run(render=False):
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(current_state)
+        action_to_take = current_action+1
 
         # Take a step in environment
-        next_state, reward, is_done, info = env.step(current_action)
+        next_state, reward, is_done, info = env.step(action_to_take)
         next_state = downscale(next_state)
         next_state = agent.frame_preprocessor.add_frame(next_state)
 
