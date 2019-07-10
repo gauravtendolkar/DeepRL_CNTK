@@ -55,7 +55,7 @@ NUM_EPISODES = 100000
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = FrameSubstractingAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84,84), actor_pretrained_policy=None, critic_pretrained_policy=None)
+agent = FrameSubstractingAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84,84), actor_pretrained_policy='Pong-v0.actor.model', critic_pretrained_policy='Pong-v0.critic.model')
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -84,7 +84,7 @@ def run(render=False):
             print("Episode Terminated...")
 
         # the observe method of an agent adds the experience to a experience replay buffer
-        agent.observe((current_state, current_action, reward, next_state, is_done))
+        # agent.observe((current_state, current_action, reward, next_state, is_done))
 
         # the learn method -
         # 1. samples uniformly random batch of experience from replay buffer
@@ -105,11 +105,11 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
-            agent.learn()
-            agent.actor_policy.probabilities.save("Pong-v0.actor.model")
-            agent.critic_policy.value.save("Pong-v0.critic.model")
+            # agent.learn()
+            # agent.actor_policy.probabilities.save("Pong-v0.actor.model")
+            # agent.critic_policy.value.save("Pong-v0.critic.model")
             agent.frame_preprocessor.reset()
-            agent.memory.reset()
+            # agent.memory.reset()
             return cumulative_reward
 
 print("Training Starts..")
@@ -118,7 +118,7 @@ print("Training Starts..")
 ep = 0
 episode_rewards = []
 while ep < NUM_EPISODES:
-    episode_reward = run(render=False)
+    episode_reward = run(render=True)
     episode_rewards.append(episode_reward)
     with open("episode_rewards.txt", "w") as f:
         f.write(str(episode_rewards))

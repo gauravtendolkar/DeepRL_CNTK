@@ -50,7 +50,7 @@ NUM_ACTION_VALUES = env.action_space.n
 NUM_EPISODES = 10000
 
 # Since we have a single discrete action - continuous/discrete observation space problem,
-# we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
+# we can use a simple algorithm like DQN. To see which cases require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
 agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy='crosser.model', replace_target=100)
@@ -71,7 +71,7 @@ def run(render=False):
     # https://github.com/codetendolkar/DeepRL_CNTK/blob/master/core/media/downscaled_image.PNG
     current_state = downscale(current_state)
 
-    # IMPORTANT NOTE: A simgle image does not give enough information to the agent. For example, if the ball is in
+    # IMPORTANT NOTE: A single image does not give enough information to the agent. For example, if the ball is in
     # center of screen in image, the pong agent does not know whether it is going up or down.
     # Information from multiple frames is necessary to play effectively. For some games like tic-tac-toe,
     # multiple frames is not necessary. Multi frame information can be obtained by either stitching
