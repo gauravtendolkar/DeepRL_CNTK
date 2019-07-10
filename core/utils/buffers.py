@@ -57,7 +57,9 @@ class FrameSubtractor:
     def add_frame(self, frame):
         if self.old_frame is None:
             self.old_frame = frame
-        return frame - self.old_frame
+        s_frame = frame - self.old_frame
+        self.old_frame = frame
+        return s_frame
 
     def reset(self):
         self.old_frame = None
@@ -65,21 +67,11 @@ class FrameSubtractor:
 
 class EpisodicBuffer:
 
-    episode = []
-
-    def __init__(self, discount_factor):
-        self.discount_factor = discount_factor
+    def __init__(self):
+        self.episode = []
 
     def add(self, sample):
         self.episode.append(sample)
-
-    def update(self):
-        rewards = np.array([e[2] for e in self.episode], dtype=np.float32)
-        values = np.array([e[3] for e in self.episode], dtype=np.float32)
-        td_0s = rewards[:-1] + self.discount_factor * values[1:] - values[:-1]
-
-
-        cumulative_returns = scipy.signal.lfilter([1], [1, float(-self.discount_factor)], rewards[::-1], axis=0)[::-1]
 
     def get_episode(self):
         return self.episode
