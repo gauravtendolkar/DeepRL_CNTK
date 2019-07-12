@@ -55,7 +55,7 @@ NUM_EPISODES = 100000
 # we can use a simple algorithm like DQN. To see which algorithms require which algorithms, refer -
 # https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html
 # Create a DQN agent
-agent = FrameSubstractingAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84,84), actor_pretrained_policy='Pong-v0.actor.model', critic_pretrained_policy='Pong-v0.critic.model')
+agent = FrameSubstractingAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84,84), actor_pretrained_policy='./pre_trained/a2c_pong/sudden_drop_1/Pong-v0.actor.model', critic_pretrained_policy='./pre_trained/a2c_pong/sudden_drop_1/Pong-v0.critic.model')
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
