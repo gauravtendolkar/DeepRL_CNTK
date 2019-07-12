@@ -68,7 +68,7 @@ class ActorCNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=0.0001, momentum=0.9)])
+        self.trainer = Trainer(self.log_probability, self.loss, [adam(self.probabilities.parameters, lr=[0.0001]*600 + [0.00005]*600 + [0.00001]*600 + [0.000005], momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((1,) + self.observation_space_shape)
@@ -101,7 +101,7 @@ class CriticCNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=0.0001, momentum=0.9)])
+        self.trainer = Trainer(self.value, self.loss, [adam(self.value.parameters, lr=[0.0001]*600 + [0.00005]*600 + [0.00001]*600 + [0.000005], momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((1,) + self.observation_space_shape)
