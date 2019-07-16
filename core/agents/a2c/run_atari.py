@@ -46,8 +46,8 @@ def run(render=False):
         # Add reward to cumulative episode reward
         cumulative_reward += reward
 
-        if agent.steps % BATCH_SIZE == 0:
-            agent.learn()
+        # if agent.steps % BATCH_SIZE == 0:
+        #     agent.learn()
 
         # OPTIONAL (slows down training): render method displays the current state of the environment
         if render:
@@ -57,6 +57,7 @@ def run(render=False):
         # Note that the saving part is the only CNTK specific code in this entire file
         # Ensuring such modularities are key to building complex libraries
         if is_done:
+            agent.learn()
             if ep % 20 == 0:
                 agent.actor_policy.probabilities.save(CKPT_PATH+ENV_NAME+".actor.ep_{}.model".format(ep))
                 agent.critic_policy.value.save(CKPT_PATH+ENV_NAME+".critic.ep_{}.model".format(ep))

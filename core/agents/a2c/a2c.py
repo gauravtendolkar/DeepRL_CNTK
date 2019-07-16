@@ -29,31 +29,25 @@ class A2CAgent:
         self.memory.add(sample)
 
     def learn(self):
-        episode = self.memory.get_data()
-        n = len(episode)
+        batch = self.memory.get_data()
+        n = len(batch)
 
-        current_states = [e[0] for e in episode]
-        actions = [[e[1]] for e in episode]
-        rewards = [[e[2]] for e in episode]
-        next_states = [e[3] for e in episode]
-
-        # Calculate returns from rewards
-        returns = [0]*n
-        for i in range(n):
-            ret = 0
-            for t in range(i, n):
-                ret += (DISCOUNT_FACTOR ** (t - i)) * rewards[t][0]
-            returns[i] = [ret]
+        current_states = [e[0] for e in batch]
+        actions = [[e[1]] for e in batch]
+        rewards = [[e[2]] for e in batch]
+        next_states = [e[3] for e in batch]
 
         predicted_current_state_values = self.critic_policy.predict(current_states)
         predicted_next_state_values = self.critic_policy.predict(next_states)
         target_next_state_values = rewards + DISCOUNT_FACTOR*predicted_next_state_values
         td_0s = target_next_state_values - predicted_current_state_values
 
-        map(np.random.shuffle, [current_states, td_0s, actions, target_next_state_values])
+        for i in range((n // BATCH_SIZE) + 1):
+            start, end = i * BATCH_SIZE, min((i + 1) * BATCH_SIZE, n)
+            if start < end:
+                self.actor_policy.optimise(current_states[start:end], td_0s[start:end], actions[start:end])
+                self.critic_policy.optimise(current_states[start:end], target_next_state_values[start:end])
 
-        self.actor_policy.optimise(current_states, td_0s, actions)
-        self.critic_policy.optimise(current_states, target_next_state_values)
         self.memory.reset()
 
 

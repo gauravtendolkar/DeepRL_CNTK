@@ -46,7 +46,7 @@ def run(render=False):
         # Add reward to cumulative episode reward
         cumulative_reward += reward
 
-        if is_done or agent.steps % BATCH_SIZE == 0:
+        if is_done:
             agent.learn()
 
         # OPTIONAL (slows down training): render method displays the current state of the environment
@@ -70,7 +70,8 @@ print("Training Starts..")
 ep = 0
 episode_rewards = []
 while ep < MAX_NUM_EPISODES:
-    episode_reward = run(render=False)
+    render = ep % 20 == 0
+    episode_reward = run(render=render)
     episode_rewards.append(episode_reward)
     with open(CKPT_PATH + "episode_rewards.txt", "w") as f:
         f.write(str(episode_rewards))

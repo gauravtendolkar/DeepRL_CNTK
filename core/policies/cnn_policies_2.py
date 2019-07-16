@@ -70,7 +70,7 @@ class ActorCNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.logits, self.loss, [adam(self.logits.parameters, lr=0.0001, momentum=0.9)])
+        self.trainer = Trainer(self.probabilities, self.loss, [adam(self.probabilities.parameters, lr=0.0001, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((1,)+self.observation_space_shape)
@@ -82,12 +82,16 @@ class ActorCNNPolicy:
             h = C.layers.Convolution2D(filter_shape=(5,5), num_filters=64, strides=(2,2), pad=True, name='conv_2', activation=C.relu)(h)
             h = C.layers.Convolution2D(filter_shape=(3,3), num_filters=128, strides=(1,1), pad=True, name='conv_3', activation=C.relu)(h)
             h = C.layers.Dense(64, activation=C.relu, name='dense_1')(h)
-            self.logits = C.layers.Dense(self.num_actions, name='dense_2', activation=None)(h)
+            self.probabilities = C.layers.Dense(self.num_actions, name='dense_2', activation= C.softmax)(h)
         else:
-            self.logits = C.Function.load(pretrained_policy)(self.image_frame)
-        self.probabilities = C.softmax(self.logits)
-        log_probability_of_action_taken = cross_entropy_with_softmax(self.logits, one_hot_action)
-        self.loss = -self.td_error*log_probability_of_action_taken
+            self.probabilities = C.Function.load(pretrained_policy)(self.image_frame)
+        selected_action_probablity = C.ops.times_transpose(self.probabilities, one_hot_action)
+        self.log_probability = C.ops.log(selected_action_probablity)
+        self.loss = -self.td_error * self.log_probability
+
+        # self.probabilities = C.softmax(self.logits)
+        # log_probability_of_action_taken = cross_entropy_with_softmax(self.logits, one_hot_action)
+        # self.loss = C.reduce_mean(self.td_error*log_probability_of_action_taken)
 
     def optimise(self, image_frame, td_error, action_index):
         self.trainer.train_minibatch({self.image_frame: image_frame, self.td_error: td_error, self.action_index: action_index})

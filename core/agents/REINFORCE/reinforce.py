@@ -1,5 +1,5 @@
 import numpy as np
-from policies.cnn_policies_2 import ActorCNNPolicy
+from policies.cnn_policies_2 import ActorCNNPolicy, CriticCNNPolicy
 from utils.buffers import SimpleBuffer, FrameSubtractor
 from agents.a2c.hyperparams import BATCH_SIZE, DISCOUNT_FACTOR
 
@@ -29,8 +29,8 @@ class REINFORCEAgent:
         episode = self.memory.get_data()
         n = len(episode)
 
-        current_states = [e[0] for e in episode]
-        actions = [[e[1]] for e in episode]
+        current_states = np.array([e[0] for e in episode])
+        actions = np.array([[e[1]] for e in episode])
         rewards = [e[2] for e in episode]
 
         # Calculate returns from rewards
@@ -41,7 +41,11 @@ class REINFORCEAgent:
                 ret += (DISCOUNT_FACTOR ** (t - i)) * rewards[t]
             returns[i] = [ret]
 
-        map(np.random.shuffle, [current_states, returns, actions])
+        returns = np.array(np.divide((returns - np.mean(returns)), np.std(returns) + 0.000001))
 
-        self.actor_policy.optimise(current_states, returns, actions)
+        for i in range((n // BATCH_SIZE) + 1):
+            start, end = i * BATCH_SIZE, min((i + 1) * BATCH_SIZE, n)
+            if start < end:
+                self.actor_policy.optimise(current_states[start:end], returns[start:end], actions[start:end])
+
         self.memory.reset()
