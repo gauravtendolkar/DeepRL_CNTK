@@ -59,8 +59,9 @@ def run(render=False):
         if is_done:
             agent.learn()
             if ep % 20 == 0:
-                agent.actor_policy.probabilities.save(CKPT_PATH+ENV_NAME+".actor.ep_{}.model".format(ep))
-                agent.critic_policy.value.save(CKPT_PATH+ENV_NAME+".critic.ep_{}.model".format(ep))
+                pass
+                # agent.actor_policy.probabilities.save(CKPT_PATH+ENV_NAME+".actor.ep_{}.model".format(ep))
+                # agent.critic_policy.value.save(CKPT_PATH+ENV_NAME+".critic.ep_{}.model".format(ep))
             agent.frame_preprocessor.reset()
             agent.memory.reset()
             return cumulative_reward
