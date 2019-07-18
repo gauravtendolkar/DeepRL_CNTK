@@ -33,23 +33,17 @@ class A2CAgent:
 
     def learn(self):
         batch = self.memory.get_data()
-        n = len(batch)
 
         current_states = [e[0] for e in batch]
         actions = [[e[1]] for e in batch]
         rewards = [[e[2]] for e in batch]
         next_states = [e[3] for e in batch]
 
-        predicted_current_state_values = self.policy.value(current_states)
-        predicted_next_state_values = self.policy.value(next_states)
-        target_next_state_values = rewards + DISCOUNT_FACTOR*predicted_next_state_values
-        td_0s = target_next_state_values - predicted_current_state_values
+        [values, next_values] = self.policy.values(current_states, next_states)
+        targets = DISCOUNT_FACTOR*next_values + rewards
+        advantages = targets - values
 
-        for i in range((n // BATCH_SIZE) + 1):
-            start, end = i * BATCH_SIZE, min((i + 1) * BATCH_SIZE, n)
-            if start < end:
-                self.policy.optimise(current_states[start:end], td_0s[start:end], actions[start:end], target_next_state_values[start:end])
-                #self.critic_policy.optimise(current_states[start:end], target_next_state_values[start:end])
+        self.policy.optimise(current_states, actions, advantages, targets)
 
         self.memory.reset()
 
