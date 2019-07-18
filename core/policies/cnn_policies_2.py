@@ -84,6 +84,7 @@ class ActorCriticCNNPolicy:
         self.next_image_frame = C.input_variable((1,) + self.observation_space_shape)
         self.advantage = C.input_variable((1,))
         self.action_index = C.input_variable((1,))
+        self.target_value = C.input_variable((1,))
         one_hot_action = C.one_hot(self.action_index, self.num_actions)
         if pretrained_policy is None:
             h = C.layers.Convolution2D(filter_shape=(7,7), num_filters=32, strides=(4,4), pad=True, name='conv_1', activation=C.relu)
@@ -100,20 +101,19 @@ class ActorCriticCNNPolicy:
         self.values_output = C.combine([self.value, self.next_value])
         selected_action_probablity = C.ops.times_transpose(self.probabilities, one_hot_action)
         self.log_probability = C.ops.log(selected_action_probablity)
-        target_value = self.advantage + self.value
         self.actor_loss = -self.advantage * self.log_probability
 
-        self.critic_loss = C.squared_error(target_value, self.value)
+        self.critic_loss = C.squared_error(self.target_value, self.value)
 
-        self.loss = 0.2*self.actor_loss + 0.8*self.critic_loss
+        self.loss = 0.5*self.actor_loss + 0.5*self.critic_loss
 
         # self.probabilities = C.softmax(self.logits)
         # log_probability_of_action_taken = cross_entropy_with_softmax(self.logits, one_hot_action)
         # self.loss = C.reduce_mean(self.td_error*log_probability_of_action_taken)
 
-    def optimise(self, image_frame, action_index, advantage):
+    def optimise(self, image_frame, action_index, advantage, targets):
         self.trainer.train_minibatch({self.image_frame: image_frame, self.advantage: advantage,
-                                      self.action_index: action_index})
+                                      self.action_index: action_index, self.target_value: targets})
 
     def predict(self, image_frame):
         return self.probabilities.eval({self.image_frame: image_frame})

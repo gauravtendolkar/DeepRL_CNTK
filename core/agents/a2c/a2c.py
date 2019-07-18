@@ -40,9 +40,10 @@ class A2CAgent:
         next_states = [e[3] for e in batch]
 
         [values, next_values] = self.policy.values(current_states, next_states)
-        advantages = DISCOUNT_FACTOR*next_values + rewards - values
+        targets = DISCOUNT_FACTOR*next_values + rewards
+        advantages = targets - values
 
-        self.policy.optimise(current_states, actions, advantages)
+        self.policy.optimise(current_states, actions, advantages, targets)
 
         self.memory.reset()
 
