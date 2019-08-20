@@ -15,7 +15,7 @@ NUM_ACTION_VALUES = 3  # env.action_space.n
 MAX_NUM_EPISODES = 100000
 
 agent = REINFORCEAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84),
-                       actor_pretrained_policy=None)
+                       actor_pretrained_policy='ckpt/Pong-v).actor.ep_6940.model')
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end

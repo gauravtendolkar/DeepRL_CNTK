@@ -9,13 +9,13 @@ class A2CAgent:
     steps = 0
 
     def __init__(self, num_actions, observation_space_shape, actor_pretrained_policy=None, critic_pretrained_policy=None, *args, **kwargs):
-        # self.actor_policy = ActorCNNPolicy(name='Actor Network', observation_space_shape=observation_space_shape,
-        #                                    num_actions=num_actions, pretrained_policy=actor_pretrained_policy)
-        # self.critic_policy = CriticCNNPolicy(name='Critic Network', observation_space_shape=observation_space_shape,
-        #                                      num_actions=num_actions, pretrained_policy=critic_pretrained_policy)
-
-        self.policy = ActorCriticCNNPolicy(name='Actor Critic Network', observation_space_shape=observation_space_shape,
+        self.actor_policy = ActorCNNPolicy(name='Actor Network', observation_space_shape=observation_space_shape,
                                            num_actions=num_actions, pretrained_policy=actor_pretrained_policy)
+        self.critic_policy = CriticCNNPolicy(name='Critic Network', observation_space_shape=observation_space_shape,
+                                             num_actions=num_actions, pretrained_policy=critic_pretrained_policy)
+
+        # self.policy = ActorCriticCNNPolicy(name='Actor Critic Network', observation_space_shape=observation_space_shape,
+        #                                    num_actions=num_actions, pretrained_policy=actor_pretrained_policy)
 
         self.num_actions = num_actions
         self.observation_space_shape = observation_space_shape
@@ -23,7 +23,7 @@ class A2CAgent:
         self.frame_preprocessor = FrameSubtractor()
 
     def act(self, current_state):
-        probabilities = np.squeeze(self.policy.predict(current_state))
+        probabilities = np.squeeze(self.actor_policy.predict(current_state))
         action = np.random.choice(range(self.num_actions), 1, p=probabilities)
         return action
 
@@ -33,17 +33,31 @@ class A2CAgent:
 
     def learn(self):
         batch = self.memory.get_data()
+        n = len(batch)
 
         current_states = [e[0] for e in batch]
         actions = [[e[1]] for e in batch]
         rewards = [[e[2]] for e in batch]
         next_states = [e[3] for e in batch]
 
-        [values, next_values] = self.policy.values(current_states, next_states)
-        targets = DISCOUNT_FACTOR*next_values + rewards
-        advantages = targets - values
+        # Calculate returns from rewards
+        returns = [0] * n
+        for i in range(n):
+            ret = 0
+            for t in range(i, n):
+                ret += (DISCOUNT_FACTOR ** (t - i)) * rewards[t][0]
+            returns[i] = [ret]
 
-        self.policy.optimise(current_states, actions, advantages, targets)
+        returns = np.array(np.divide((returns - np.mean(returns)), np.std(returns) + 0.000001))
+        values = self.critic_policy.predict(current_states)
+        advantages = returns - values
+
+        for i in range((n // BATCH_SIZE) + 1):
+            start, end = i * BATCH_SIZE, min((i + 1) * BATCH_SIZE, n)
+            if start < end:
+                self.critic_policy.optimise(current_states[start:end], next_states[start:end], rewards[start:end])
+
+                self.actor_policy.optimise(current_states[start:end], advantages[start:end], actions[start:end])
 
         self.memory.reset()
 

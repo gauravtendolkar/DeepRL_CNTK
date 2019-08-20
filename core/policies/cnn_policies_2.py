@@ -53,19 +53,26 @@ class CriticCNNPolicy:
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((1,) + self.observation_space_shape)
-        self.target_current_state_value = C.input_variable((1,))
+        self.next_image_frame = C.input_variable((1,) + self.observation_space_shape)
+        self.reward = C.input_variable((1,))
         if pretrained_policy is None:
-            h = C.layers.Convolution2D(filter_shape=(7,7), num_filters=32, strides=(4,4), pad=True, name='conv_1', activation=C.relu)(self.image_frame)
+            h = C.layers.Convolution2D(filter_shape=(7,7), num_filters=32, strides=(4,4), pad=True, name='conv_1', activation=C.relu)
             h = C.layers.Convolution2D(filter_shape=(5,5), num_filters=64, strides=(2,2), pad=True, name='conv_2', activation=C.relu)(h)
             h = C.layers.Convolution2D(filter_shape=(3,3), num_filters=128, strides=(1,1), pad=True, name='conv_3', activation=C.relu)(h)
             h = C.layers.Dense(64, activation=C.relu, name='dense_1')(h)
-            self.value = C.layers.Dense(1, name='dense_2')(h)
+            v = C.layers.Dense(1, name='dense_2')(h)
+            self.value = v(self.image_frame)
+            self.next_value = v(self.next_image_frame)
+            self.output = C.combine([self.value, self.next_value])
         else:
-            self.value = C.Function.load(pretrained_policy)(self.image_frame)
-        self.loss = C.squared_error(self.target_current_state_value, self.value)
+            self.output = C.Function.load(pretrained_policy)(self.image_frame, self.next_image_frame)
+            [self.value, self.next_value] = self.output[self.value.output], self.output[self.next_value.output]
 
-    def optimise(self, image_frame, target_current_state_value):
-        self.trainer.train_minibatch({self.image_frame: image_frame, self.target_current_state_value: target_current_state_value})
+        target = DISCOUNT_FACTOR*self.next_value + self.reward
+        self.loss = C.squared_error(target, self.value)
+
+    def optimise(self, image_frame, next_image_frame, rewards):
+        self.trainer.train_minibatch({self.image_frame: image_frame, self.next_image_frame: next_image_frame, self.reward: rewards})
 
     def predict(self, image_frame):
         return self.value.eval({self.image_frame: image_frame})
@@ -77,7 +84,7 @@ class ActorCriticCNNPolicy:
         self.observation_space_shape = observation_space_shape
         self.num_actions = num_actions
         self._build_network(pretrained_policy)
-        self.trainer = Trainer(self.output, self.loss, [adam(self.output.parameters, lr=0.0001, momentum=0.9)])
+        self.trainer = Trainer(self.output, self.loss, [adam(self.output.parameters, lr=0.00003, momentum=0.9)])
 
     def _build_network(self, pretrained_policy):
         self.image_frame = C.input_variable((1,)+self.observation_space_shape)
