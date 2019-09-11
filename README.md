@@ -45,3 +45,4 @@ Steps -
 ```sudo apt-get install openmpi-bin```
 ```pip install cntk```
 ```sudo apt install ffmpeg```
+```pip install pygame```
