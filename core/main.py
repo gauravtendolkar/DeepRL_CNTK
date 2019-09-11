@@ -1,7 +1,4 @@
 import gym
-from agents.dqn import Agent
-from utils.preprocessing import downscale
-import random
 
 # Create environment
 env = gym.make('Pong-ram-v0', frameskip=2)

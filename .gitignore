@@ -264,3 +264,6 @@ CNTK_RL_Baselines.sln
 CNTK_RL_Baselines.pyproj
 .gitattributes
 .vs/
+
+external_environments/
+**/ckpt/

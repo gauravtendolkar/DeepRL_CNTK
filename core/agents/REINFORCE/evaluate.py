@@ -12,10 +12,8 @@ NUM_STATES = (84, 84)  # env.observation_space.shape
 
 NUM_ACTION_VALUES = 3  # env.action_space.n
 
-MAX_NUM_EPISODES = 100000
-
 agent = REINFORCEAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84),
-                       actor_pretrained_policy='ckpt/Pong-v0.actor.ep_6940.model')
+                       actor_pretrained_policy='ckpt/Pong-v0.actor.ep_3000.model')
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -29,6 +27,7 @@ def run(render=False):
     cumulative_reward = 0
 
     while True:
+        vr.capture_frame()
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(current_state)
@@ -45,7 +44,8 @@ def run(render=False):
         cumulative_reward += reward
 
         # OPTIONAL (slows down training): render method displays the current state of the environment
-        env.render()
+        #env.render()
+
 
         # Save policy after every episode and return cumulative earned reward.
         # Note that the saving part is the only CNTK specific code in this entire file
@@ -59,18 +59,6 @@ def run(render=False):
 print("Training Starts..")
 
 # Training code
-ep = 0
-episode_rewards = []
-while ep < MAX_NUM_EPISODES:
-    render = ep % 20 == 0
-    episode_reward = run(render=render)
-    episode_rewards.append(episode_reward)
-    with open(CKPT_PATH + "episode_rewards.txt", "w") as f:
-        f.write(str(episode_rewards))
-    avg_reward = np.mean(episode_rewards[-100:]) if len(episode_rewards) >= 100 else np.mean(episode_rewards)
-    print(("Episode {}: Reward: {}, Average Reward in past " + str(min(100, len(episode_rewards))) +
-          " episodes {}, Steps: {}").format(ep, episode_reward, avg_reward, agent.steps))
-    ep += 1
-
-    if avg_reward > 20:
-        break
+vr = gym.wrappers.monitoring.video_recorder.VideoRecorder(env, './pretrained/demo.mp4')
+episode_reward = run(render=False)
+vr.close()

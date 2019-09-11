@@ -1,5 +1,5 @@
 import numpy as np
-from policies.cnn_policies_2 import ActorCNNPolicy, CriticCNNPolicy
+from policies.cnn_policies_2 import ActorCNNPolicy, CriticCNNPolicy, ActorNNPolicy
 from utils.buffers import SimpleBuffer, FrameSubtractor
 from agents.a2c.hyperparams import BATCH_SIZE, DISCOUNT_FACTOR
 
@@ -8,7 +8,7 @@ class REINFORCEAgent:
     steps = 0
 
     def __init__(self, num_actions, observation_space_shape, actor_pretrained_policy=None, *args, **kwargs):
-        self.actor_policy = ActorCNNPolicy(name='Actor Network', observation_space_shape=observation_space_shape,
+        self.actor_policy = ActorNNPolicy(name='Actor Network', observation_space_shape=observation_space_shape,
                                            num_actions=num_actions, pretrained_policy=actor_pretrained_policy)
 
         self.num_actions = num_actions

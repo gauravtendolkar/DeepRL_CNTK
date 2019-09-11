@@ -26,8 +26,7 @@ Navigate to core/agents/base.py
 
 # import required modules
 import gym
-from agents.dqn import RAMAgent
-from utils.preprocessing import downscale
+from agents.dqn.dqn import RAMAgent
 import random
 import numpy as np
 import time
