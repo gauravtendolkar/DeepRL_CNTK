@@ -34,3 +34,14 @@ I choose CNTK because -
 2. Lack of tutorials/comprehensive documentation in CNTK
 
 Reinforcement learning architectures contain more complexities then standard DNNs. Each paper has its own implementation quirks and therefore understanding code of existing algorithms clearly lets you write/discover novel architectures.
+
+Steps - 
+``` python3 get-pip.py --user```
+```python3 -m pip install virtualenv --user```
+```virtualenv -p /usr/bin/python3 env```
+```source env/bin/activate```
+```pip install gym[atari]```
+```sudo apt update```
+```sudo apt-get install openmpi-bin```
+```pip install cntk```
+```sudo apt install ffmpeg```
