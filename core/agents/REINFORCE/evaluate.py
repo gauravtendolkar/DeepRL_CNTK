@@ -1,4 +1,5 @@
 import gym
+import os
 from agents.REINFORCE.reinforce import REINFORCEAgent
 from utils.preprocessing import downscale
 import numpy as np
@@ -12,8 +13,10 @@ NUM_STATES = (84, 84)  # env.observation_space.shape
 
 NUM_ACTION_VALUES = 3  # env.action_space.n
 
+base_path = os.path.dirname(os.path.abspath(__file__))
+
 agent = REINFORCEAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84),
-                       actor_pretrained_policy='ckpt/Pong-v0.actor.ep_3000.model')
+                       actor_pretrained_policy=base_path+'/pretrained/Pong-v0.model')
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -59,6 +62,6 @@ def run(render=False):
 print("Training Starts..")
 
 # Training code
-vr = gym.wrappers.monitoring.video_recorder.VideoRecorder(env, './pretrained/demo.mp4')
+vr = gym.wrappers.monitoring.video_recorder.VideoRecorder(env, base_path+'/pretrained/demo.mp4')
 episode_reward = run(render=False)
 vr.close()
