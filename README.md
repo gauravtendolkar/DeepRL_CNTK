@@ -35,14 +35,24 @@ I choose CNTK because -
 
 Reinforcement learning architectures contain more complexities then standard DNNs. Each paper has its own implementation quirks and therefore understanding code of existing algorithms clearly lets you write/discover novel architectures.
 
-Steps - 
+## Environment Setup for Source Code
+All of the code is tested with CPU version of CNTK. I use Ubuntu 16.04 or Windows 10 on Azure. Mac OS have additional complications during setup. Following steps show setup for Ubuntu 16.04 -
+
+1. Ubuntu 16.04 comes pre-installed with python 3.5. So install pip using  
 ``` python3 get-pip.py --user```  
+2. Use pip to install virtualenv to sandbox your python installations  
 ```python3 -m pip install virtualenv --user```  
+
+3. Create a new environment with virtualenv and activate it  
 ```virtualenv -p /usr/bin/python3 env```  
 ```source env/bin/activate```  
+4. Install OpenAI gym with Atari dependencies  
 ```pip install gym[atari]```  
+5. Install CNTK with pip. But before that, CNTK requires openmpi  
 ```sudo apt update```  
 ```sudo apt-get install openmpi-bin```  
 ```pip install cntk```  
+6. Video recording of gym environments requires FFMPEG  
 ```sudo apt install ffmpeg```  
-```pip install pygame```  
+7. (Optional) Install tmux since typical training will go on for days  
+```sudo apt install tmux```  
