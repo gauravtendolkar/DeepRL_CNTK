@@ -52,7 +52,11 @@ All of the code is tested with CPU version of CNTK. I use Ubuntu 16.04 or Window
 ```sudo apt update```  
 ```sudo apt-get install openmpi-bin```  
 ```pip install cntk```  
-6. Video recording of gym environments requires FFMPEG  
+6. Video recording of gym environments requires FFMPEG. Also install OpenGL  
 ```sudo apt install ffmpeg```  
 7. (Optional) Install tmux since typical training will go on for days  
 ```sudo apt install tmux```  
+8. (Optional) I also record videos on Azure VMs so I require a virtual display to capture frame renderings  
+```sudo apt-get install python-opengl```  
+```sudo apt-get install xvfb```  
+```pip install pyvirtualdisplay```  
