@@ -135,7 +135,7 @@ print("Training Starts..")
 # Training code
 ep = avg_reward = ep_for_avg = 0
 while ep < NUM_EPISODES:
-    episode_reward = run(render=True)
+    episode_reward = run(render=False)
     print("Episode Terminated..")
 
     if ep % 100 == 0:

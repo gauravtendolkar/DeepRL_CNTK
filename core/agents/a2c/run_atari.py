@@ -1,4 +1,5 @@
 import gym
+import os
 from agents.a2c.a2c import A2CAgent
 from utils.preprocessing import downscale
 import numpy as np
