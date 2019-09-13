@@ -7,7 +7,7 @@
 ### Week 1/4
 | Algorithm   | Implementation | Pre-Trained Policies | Demo             |
 | ----------- | -------------- | -------------------- |------------------|
-| Simple DQN  | ✔️             | ❌                  |                  |
+| Simple DQN  | ✔️             | ❌                  | ![](core/media/lunarlander_ram_dqn_demo.gif)                |
 | DQN         | ❌             | ❌                  |                  |
 | Double DQN  | ❌             | ❌                  |                  |
 | REINFORCE   | ✔️             | ✔️                  | ![](core/media/pong_reinforce_demo.gif) |
