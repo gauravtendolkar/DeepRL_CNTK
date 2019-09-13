@@ -21,7 +21,7 @@ NUM_ACTION_VALUES = env.action_space.n
 # Set number of episodes to train
 NUM_EPISODES = 10000
 
-agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy="crosser.model", explore=False)
+agent = Agent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84), pretrained_policy="Lunar.model", explore=False)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
