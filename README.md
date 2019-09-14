@@ -12,13 +12,8 @@
 | Double DQN  | ❌             | ❌                  |                  |
 | REINFORCE   | ✔️             | ✔️                  | ![](core/media/pong_reinforce_demo.gif) |
 | A2C         | ✔️             | ❌                  |                  |
-| A3C         | ❌             | ❌                  |                  |
 | PPO         | ❌             | ❌                  |                  |
 | DDPG        | ❌             | ❌                  |                  |
-| SAC         | ❌             | ❌                  |                  |
-| TRPO        | ❌             | ❌                  |                  |
-| HER         | ❌             | ❌                  |                  |
-| GAIL        | ❌             | ❌                  |                  |
 
 This repository is meant to teach the intricacies of writing advanced Deep Reinforcement Algorithms in CTNK. A lot of good repositories for RL exists but use Tensorflow/PyTorch. Most of them are easy to USE libraries rather than easy to UNDERSTAND libraries. There is a steep learning curve for someone new to the field who wants to modify existing architectures or explore possibilities.
 
