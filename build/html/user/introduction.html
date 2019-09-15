@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Introduction &#8212; DIY Deep RL with CNTK 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Deep Deterministic Policy Gradient" href="../algorithms/dqn.html" />
+    <link rel="prev" title="Welcome to DIY Deep RL with CNTK’s documentation!" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<h1><a class="toc-backref" href="#id1">Introduction</a><a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#introduction" id="id1">Introduction</a></p>
+<ul>
+<li><p><a class="reference internal" href="#what-this-is" id="id2">What This Is</a></p></li>
+<li><p><a class="reference internal" href="#why-i-built-this" id="id3">Why I Built This</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="what-this-is">
+<h2><a class="toc-backref" href="#id2">What This Is</a><a class="headerlink" href="#what-this-is" title="Permalink to this headline">¶</a></h2>
+<p>Welcome to Deep RL with CNTK</p>
+<p>This repository is meant to teach the intricacies of writing advanced Deep Reinforcement Algorithms in CTNK.
+In short, a lot of good repositories for RL exists. Most of them are easy to USE libraries rather than easy to UNDERSTAND libraries.
+There is a steep learning curve for someone new to the field who wants to modify existing architectures or explore possibilities.</p>
+</div>
+<div class="section" id="why-i-built-this">
+<h2><a class="toc-backref" href="#id3">Why I Built This</a><a class="headerlink" href="#why-i-built-this" title="Permalink to this headline">¶</a></h2>
+<p>I observed that a lot of labs around universities were trying to write custom implementations of popular RL algorithms
+such that they suit the needs of their environments. Using existing libraries proved challenging either due to non standard environments,
+inability to tweak the library code, or just the complexity of implementation. The issue is exacerbated by the fact that debugging RL is not the same as debugging a traditional software code.
+An incorrect implementation wont throw an error. It will often manifest itself late in the rewards graph during training. By then, the researcher has already spent days training the algorithm.
+Using existing libraries as a guide to write your own algorithms is also challenging due to the complexities in their implementations. All of this is a huge barrier for someone new to the field of RL.</p>
+<p>To overcome that, I wrote this library which guides you on how to write your own library. How will this be better -
+- Each algorithm is self contained avoiding cross dependencies
+- The common code is consistent across algorithms
+- All algorithms are implemented in single agent, single environment version. No confusing parallelisation or extra dimension of agents/environments
+- No tricks. All algorithms are implemented in the most standard way described in reference papers
+- Lots, lots and lots of comments. Each code line commented. Way more comments than needed</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">DIY Deep RL with CNTK</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-this-is">What This Is</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-i-built-this">Why I Built This</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/dqn.html">Deep Deterministic Policy Gradient</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to DIY Deep RL with CNTK’s documentation!</a></li>
+      <li>Next: <a href="../algorithms/dqn.html" title="next chapter">Deep Deterministic Policy Gradient</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Gaurav Tendolkar.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/user/introduction.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

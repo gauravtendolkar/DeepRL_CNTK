@@ -4,8 +4,8 @@ from utils.preprocessing import downscale
 import numpy as np
 from agents.REINFORCE.hyperparams import BATCH_SIZE, CKPT_PATH
 
-from external_environments.navigate_in_traffic.rl.environment import IRTrafficEnv
-from external_environments.navigate_in_traffic.simulator.utils.constants import CAR_HARD_BRAKE, CAR_SMOOTH_BRAKE, CAR_MAX_ACCELERATION
+from environments.navigate_in_traffic.rl.environment import IRTrafficEnv
+from environments.navigate_in_traffic.simulator.utils.constants import CAR_HARD_BRAKE, CAR_SMOOTH_BRAKE, CAR_MAX_ACCELERATION
 
 
 # Create environment
