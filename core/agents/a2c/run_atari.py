@@ -1,9 +1,8 @@
 import gym
-import os
 from agents.a2c.a2c import A2CAgent
 from utils.preprocessing import downscale
 import numpy as np
-from agents.a2c.hyperparams import BATCH_SIZE, CKPT_PATH
+from agents.a2c.hyperparams import CKPT_PATH
 
 # Create environment
 ENV_NAME = 'Pong-v0'
@@ -18,7 +17,6 @@ MAX_NUM_EPISODES = 100000
 agent = A2CAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84),
                  actor_pretrained_policy=None, critic_pretrained_policy=None)
 
-
 # Create a function that runs ONE episode and returns cumulative reward at the end
 def run(render=False):
     # Reset the environment to get the initial state. current_state is a single RGB [210 x 160 x 3] image
@@ -30,6 +28,7 @@ def run(render=False):
     cumulative_reward = 0
 
     while True:
+
         # Based of agent's exploration/exploitation policy, either choose a random action or do a
         # forward pass through agent's policy to obtain action
         current_action = agent.act(current_state)
@@ -56,10 +55,11 @@ def run(render=False):
         # Ensuring such modularities are key to building complex libraries
         if is_done:
             agent.learn()
-            if ep % 20 == 0:
-                pass
-                # agent.actor_policy.probabilities.save(CKPT_PATH+ENV_NAME+".actor.ep_{}.model".format(ep))
-                # agent.critic_policy.value.save(CKPT_PATH+ENV_NAME+".critic.ep_{}.model".format(ep))
+
+            if ep % 200 == 0:
+                agent.actor_policy.probabilities.save(CKPT_PATH+ENV_NAME+".actor.ep_{}.model".format(ep))
+                agent.critic_policy.value.save(CKPT_PATH+ENV_NAME+".critic.ep_{}.model".format(ep))
+
             agent.frame_preprocessor.reset()
             agent.memory.reset()
             return cumulative_reward
