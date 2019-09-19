@@ -15,7 +15,7 @@ NUM_ACTION_VALUES = 3  # env.action_space.n
 MAX_NUM_EPISODES = 100000
 
 agent = REINFORCEAgent(num_actions=NUM_ACTION_VALUES, observation_space_shape=(84, 84),
-                       actor_pretrained_policy='ckpt/Pong-v0.actor.ep_6940.model')
+                       actor_pretrained_policy=None)
 
 
 # Create a function that runs ONE episode and returns cumulative reward at the end
@@ -67,7 +67,7 @@ def run(render=False):
 print("Training Starts..")
 
 # Training code
-ep = 1500
+ep = 0
 episode_rewards = []
 while ep < MAX_NUM_EPISODES:
     render = False#ep % 20 == 0
